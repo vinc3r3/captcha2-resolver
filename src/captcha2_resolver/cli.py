@@ -30,6 +30,10 @@ def _env() -> None:
         load_dotenv(Path.cwd() / ".env")
     except ImportError:
         pass
+    # An empty `HF_TOKEN=` line must not shadow the token saved by `hf auth login`.
+    for name in ("HF_TOKEN", "RUCAPTCHA_API_KEY"):
+        if os.environ.get(name) == "":
+            del os.environ[name]
 
 def _require_env(name: str) -> str:
     value = os.getenv(name)
@@ -124,19 +128,19 @@ def cmd_hub_push_dataset(a):
 
     repo = a.repo or _require_env("HF_DATASET_REPO")
     print(push_dataset(repo, a.labels, a.images, a.corrections, a.splits, gated=a.gated,
-                       token=os.getenv("HF_TOKEN"), dry_run=a.dry_run))
+                       token=os.getenv("HF_TOKEN") or None, dry_run=a.dry_run))
 
 def cmd_hub_push_model(a):
     from captcha2_resolver.data.hub import push_model
 
     repo = a.repo or _require_env("HF_MODEL_REPO")
     print(push_model(repo, a.model, a.metrics, dataset_repo=os.getenv("HF_DATASET_REPO", ""),
-                     gated=a.gated, token=os.getenv("HF_TOKEN"), dry_run=a.dry_run))
+                     gated=a.gated, token=os.getenv("HF_TOKEN") or None, dry_run=a.dry_run))
 
 def cmd_hub_pull_dataset(a):
     from captcha2_resolver.data.hub import pull_dataset
 
-    print(pull_dataset(a.repo or _require_env("HF_DATASET_REPO"), a.data, token=os.getenv("HF_TOKEN")))
+    print(pull_dataset(a.repo or _require_env("HF_DATASET_REPO"), a.data, token=os.getenv("HF_TOKEN") or None))
 
 # ---------------------------------------------------------------- parser
 def build_parser() -> argparse.ArgumentParser:
