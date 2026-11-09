@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# Secrets
+.env
+
+# Data: lives on the Hugging Face Hub (gated). Only small, reviewable files are committed.
+data/*
+!data/README.md
+!data/corrections.csv
+!data/splits.csv
+
+# Raw labeling runs: contain task responses (incl. worker IPs) and absolute paths.
+runs/
+
+# Training / export artifacts
+work/
+models/
+PaddleOCR/
+*.pdparams
+*.pdopt
+*.pdiparams
+*.onnx
+*.pt
+*.zip
+
+# Collector debug dumps can contain the source page
+page_dump*.html
+
+# OS / editors
+.DS_Store
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# Local denylist for scripts/check_no_source_leak.sh
+.source-denylist
