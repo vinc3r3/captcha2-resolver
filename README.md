@@ -12,10 +12,12 @@ corrections, PaddleOCR PP-OCRv5 fine-tuning, and a 7.6 MB ONNX model that runs o
 | Labels fixed after paid human labeling | 116 / 1004 (11.6%) |
 | Claude (LLM) labels that were exactly right | 786 / 1004 (78.3%): worse than paid humans and than a synthetic-only CRNN |
 
+**Hugging Face:** 🤗 [Model: `kozhikov/captcha2-resolver-onnx`](https://huggingface.co/kozhikov/captcha2-resolver-onnx) · 🤗 [Dataset: `kozhikov/captcha2-dataset`](https://huggingface.co/datasets/kozhikov/captcha2-dataset)
+
 > **Scope and intended use.** This is a study of building OCR on small, noisy, real-world data.
-> The captcha source is intentionally not disclosed. The dataset and model are published on the
-> Hugging Face Hub with **manually approved, gated access** for research and educational use.
-> Don't use this project to get around access controls on live systems.
+> The captcha source is intentionally not disclosed. The [dataset](https://huggingface.co/datasets/kozhikov/captcha2-dataset) and [model](https://huggingface.co/kozhikov/captcha2-resolver-onnx) are
+> published on the Hugging Face Hub with **manually approved, gated access** for research and educational use.
+
 
 ## Pipeline
 
@@ -31,12 +33,12 @@ Details: [docs/pipeline.md](docs/pipeline.md). What was tried, including dead en
 
 ```bash
 uv sync                                    # inference-only deps: onnxruntime, opencv, numpy
-uv run c2r predict path/to/captcha.jpg --hub <user>/captcha2-resolver-onnx   # needs approved access
+uv run c2r predict path/to/captcha.jpg --hub kozhikov/captcha2-resolver-onnx   # needs approved access
 ```
 
 ```python
 from captcha2_resolver import CaptchaSolver
-solve = CaptchaSolver("models/onnx")       # or CaptchaSolver.from_hub("<user>/captcha2-resolver-onnx")
+solve = CaptchaSolver("models/onnx")       # or CaptchaSolver.from_hub("kozhikov/captcha2-resolver-onnx")
 text, confidence = solve("captcha.jpg")
 ```
 
