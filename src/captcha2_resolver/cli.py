@@ -53,16 +53,14 @@ def cmd_label_rucaptcha(a):
 
     from captcha2_resolver.label import rucaptcha as rc
 
-    if a.resume:
-        run_dir = a.resume
-    else:
-        names = rc.select_scope(a.images, a.runs, a.size)
-        if a.dry_run or not names:
-            print("\n".join(names) or "no new images")
-            return
-        run_dir = rc.create_run(names, a.runs)
-    print("run:", run_dir)
+    names = rc.pending(a.resume) if a.resume else rc.select_scope(a.images, a.runs, a.size)
+    if a.dry_run or not names:
+        print("\n".join(names) or "nothing to send")
+        return
+    # Check the key before create_run: a saved scope.json marks its images as sent for good.
     client = rc.RucaptchaClient(_require_env("RUCAPTCHA_API_KEY"))
+    run_dir = a.resume or rc.create_run(names, a.runs)
+    print("run:", run_dir)
     records = rc.solve_run(run_dir, a.images, client, timeout=a.timeout)
     ready = sum(r["status"] == "ready" for r in records)
     print(f"{ready}/{len(records)} solved; details in {run_dir / 'results.json'}")

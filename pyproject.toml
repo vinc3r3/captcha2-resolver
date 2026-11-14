@@ -16,11 +16,11 @@ dependencies = [
 [project.optional-dependencies]
 collect = ["requests>=2.31", "beautifulsoup4>=4.12", "python-dotenv>=1.0", "tqdm>=4.66"]
 label = ["requests>=2.31", "python-dotenv>=1.0"]
-data = ["pandas>=2.0", "datasets>=2.19", "huggingface_hub>=0.23", "pillow>=10.0", "python-dotenv>=1.0"]
+data = ["pandas>=2.0", "datasets>=2.19", "huggingface_hub>=0.25", "pillow>=10.0", "python-dotenv>=1.0"]
 # Training needs PaddlePaddle. Install the build for your machine separately (CPU / CUDA), see README.
 train = ["pandas>=2.0", "pyyaml>=6.0", "paddleocr>=3.0"]
 export = ["paddle2onnx>=2.0", "pyyaml>=6.0"]
-hub = ["huggingface_hub>=0.23"]
+hub = ["huggingface_hub>=0.25"]
 dev = ["pytest>=8.0", "ruff>=0.6", "pre-commit>=3.7", "pandas>=2.0", "requests>=2.31", "beautifulsoup4>=4.12"]
 
 [project.scripts]

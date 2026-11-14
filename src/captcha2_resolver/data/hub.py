@@ -36,15 +36,16 @@ def _api(token: str | None):
 
 
 def _publish(api, repo_id: str, repo_type: str, folder: Path, gated: str, message: str) -> str:
+    if gated not in ("manual", "auto", "private"):
+        raise ValueError("gated must be one of: manual, auto, private")
     api.create_repo(repo_id, repo_type=repo_type, private=True, exist_ok=True)
+    # create_repo(exist_ok=True) leaves an existing repo's visibility alone: force it private
+    # so nothing is openly downloadable between the upload and enabling gating.
+    api.update_repo_settings(repo_id, repo_type=repo_type, private=True)
     api.upload_folder(repo_id=repo_id, repo_type=repo_type, folder_path=str(folder), commit_message=message)
     if gated in ("manual", "auto"):
         api.update_repo_settings(repo_id, repo_type=repo_type, gated=gated)
         api.update_repo_settings(repo_id, repo_type=repo_type, private=False)
-    elif gated == "private":
-        pass  # stays private
-    else:
-        raise ValueError("gated must be one of: manual, auto, private")
     prefix = "datasets/" if repo_type == "dataset" else ""
     return f"https://huggingface.co/{prefix}{repo_id}"
 
@@ -107,7 +108,14 @@ def push_dataset(repo_id: str, labels_csv: Path, images_dir: Path, corrections: 
 
 def push_model(repo_id: str, onnx_dir: Path, metrics: Path | None = None, dataset_repo: str = "",
                gated: str = "manual", token: str | None = None, dry_run: bool = False) -> str:
-    m = json.loads(metrics.read_text()) if metrics and metrics.exists() else {}
+    missing = [n for n in ("model.onnx", "dict.txt") if not (onnx_dir / n).exists()]
+    if missing:
+        raise FileNotFoundError(f"{onnx_dir} has no {', '.join(missing)}: run `c2r export onnx` first "
+                                "or pass --model <onnx dir>")
+    if not (metrics and metrics.exists()):
+        raise FileNotFoundError(f"no metrics file {metrics}: run `c2r evaluate` first (the model card "
+                                "shows these numbers)")
+    m = json.loads(metrics.read_text())
     with tempfile.TemporaryDirectory() as tmp:
         stage = Path(tmp)
         for name in ("model.onnx", "dict.txt", "inference.yml"):

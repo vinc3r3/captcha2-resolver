@@ -25,7 +25,10 @@ def _unpack(src: Path, tmp: Path) -> Path:
         return src
     with zipfile.ZipFile(src) as zf:
         zf.extractall(tmp)
-    return tmp
+    # The files may sit at the zip root or inside a folder (Finder "Compress", `zip -r dir.zip dir/`).
+    hits = sorted(p.parent for name in ("inference.json", "inference.pdmodel") for p in tmp.rglob(name)
+                  if "__MACOSX" not in p.parts)
+    return min(hits, key=lambda d: len(d.parts)) if hits else tmp
 
 
 def _model_file(model_dir: Path) -> str:

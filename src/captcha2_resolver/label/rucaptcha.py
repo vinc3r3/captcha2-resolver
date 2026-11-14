@@ -100,6 +100,12 @@ def create_run(names: list[str], runs_dir: Path) -> Path:
     return run_dir
 
 
+def pending(run_dir: Path) -> list[str]:
+    """Names in a run that `solve_run` would still submit or poll (i.e. not ready)."""
+    records = json.loads((run_dir / "results.json").read_text(encoding="utf-8"))
+    return [r["filename"] for r in records if r["status"] != "ready"]
+
+
 def solve_run(run_dir: Path, images_dir: Path, client: RucaptchaClient,
               timeout: float = 180, poll: float = 3) -> list[dict]:
     """Submit every pending record, then poll until ready/error. Resumable."""
@@ -138,7 +144,15 @@ def solve_run(run_dir: Path, images_dir: Path, client: RucaptchaClient,
                     print(f'{r["filename"]}: {text}', flush=True)
                     break
                 time.sleep(poll)
+        except RuntimeError as exc:
+            # The server rejected the task for good (unsolvable, expired id, empty answer). Drop the
+            # task id so --resume submits the image again; keep the old id for the cost audit.
+            r.setdefault("failed_task_ids", []).append(r["task_id"])
+            r.update(status="error", error=str(exc), task_id=None)
+            print(f'{r["filename"]}: error {exc} (will be resubmitted on --resume)', flush=True)
         except Exception as exc:
+            # Timeout or network error: the task may still finish, so keep polling it on --resume
+            # instead of paying for it twice.
             r.update(status="error", error=str(exc))
             print(f'{r["filename"]}: error {exc}', flush=True)
         checkpoint()

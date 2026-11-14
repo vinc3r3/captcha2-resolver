@@ -78,5 +78,7 @@ def merge(images_dir: Path, rucaptcha: Path, llm: Path, corrections: Path, split
 
 
 def load_labels(path: Path, split: str | None = None) -> list[dict]:
+    if not path.exists():  # unlike the optional merge inputs, an absent labels file is a mistake
+        raise FileNotFoundError(f"{path} not found: run `c2r data merge` (or `c2r hub pull-dataset`) first")
     rows = [r for r in _read(path) if r["label"]]
     return [r for r in rows if split is None or r["split"] == split]
